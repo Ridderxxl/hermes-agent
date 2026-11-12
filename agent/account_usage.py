@@ -943,7 +943,7 @@ def _call_plugin_usage_hook(profile, base_url: Optional[str], api_key: Optional[
 
 def fetch_account_usage(
     provider: Optional[str], *, base_url: Optional[str] = None, api_key: Optional[str] = None,
-    read_only: bool = False, identity_id: Optional[str] = None,
+    read_only: bool = False, identity_id: Optional[str] = None, raise_errors: bool = False,
 ) -> Optional[AccountUsageSnapshot]:
     from agent.account_usage_cache import remember_account_usage
 
@@ -965,6 +965,8 @@ def fetch_account_usage(
             profile = get_provider_profile(slug)
             snapshot = _call_plugin_usage_hook(profile, base_url, api_key) if profile else None
     except Exception:
+        if raise_errors:
+            raise
         return None
     # Every fetch (``/usage``, the per-turn ``session.usage``) keeps the picker's cache current.
     # A per-credential fetch is remembered under its account slot only; the provider-wide fetch

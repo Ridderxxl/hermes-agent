@@ -207,6 +207,8 @@ canonical_method("session.info", params=CanonicalSessionInfoParams, result=Canon
 
 class SessionStatsParams(Params):
     session_id: str
+    # Explicit /usage request only; regular stats polls remain local/no-network.
+    include_accounts: bool = False
 
 
 class SessionStats(Result):
@@ -237,6 +239,7 @@ class SessionStats(Result):
     provider: str
     fallback_model: str | None = None
     plan_gauge: PlanGauge | None = None
+    account_lines: list[str] | None = None
 
 
 canonical_method("session.stats", params=SessionStatsParams, result=SessionStats,

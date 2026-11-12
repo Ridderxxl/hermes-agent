@@ -205,10 +205,29 @@ def publish_usage(turn, agent, *, record: bool = False) -> None:
 async def stats(connection, ref, params):
     """``session.stats {session_id}``: the same dict ``session.usage`` carries."""
     from hermes_state_runtime import RuntimeStoreError
-    if set(params) - {"session_id", "profile"}:
+    if set(params) - {"session_id", "profile", "include_accounts"}:
+        raise RuntimeStoreError("invalid_params")
+    if "include_accounts" in params and not isinstance(params["include_accounts"], bool):
         raise RuntimeStoreError("invalid_params")
     await connection.authority.resolve(connection.actor, ref)
     agent = connection.authority.agent(ref)
     result = usage_stats(agent)
     result["compression_count"] = carried_compression_count(connection.authority.sessions.get(ref.session_id), agent)
+    if params.get("include_accounts"):
+        # Explicit /usage only: routine stats polling must never trigger provider
+        # requests. Resolve authorization first, then bind the owning home/secrets
+        # inside the off-loop read, not the gateway launch profile.
+        import asyncio
+        from gateway.session_authorities import owner_scope
+        from agent.account_usage import render_account_usage_lines
+        from agent.multi_account_usage import fetch_usage_accounts
+
+        def account_lines():
+            with owner_scope(connection.authority, hydrate_secrets=True):
+                snapshots = fetch_usage_accounts(
+                    getattr(agent, "provider", None), base_url=getattr(agent, "base_url", None),
+                    api_key=getattr(agent, "api_key", None))
+                return [line for snapshot in snapshots for line in render_account_usage_lines(snapshot)]
+
+        result["account_lines"] = await asyncio.to_thread(account_lines)
     return result

@@ -38534,6 +38534,21 @@
               }
             ],
             "default": null
+          },
+          "account_lines": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Account Lines"
           }
         },
         "required": [
@@ -38563,6 +38578,11 @@
           "session_id": {
             "title": "Session Id",
             "type": "string"
+          },
+          "include_accounts": {
+            "default": false,
+            "title": "Include Accounts",
+            "type": "boolean"
           }
         },
         "required": [
