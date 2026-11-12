@@ -52,7 +52,7 @@ it("/usage shows main's session totals panel from the owner's session.stats", as
   slash('/usage')
   await flush()
 
-  expect(request).toHaveBeenCalledWith('session.stats', { session_id: 'owner' })
+  expect(request).toHaveBeenCalledWith('session.stats', { session_id: 'owner', include_accounts: true })
   expect(request).not.toHaveBeenCalledWith('slash.exec', expect.anything())
   expect(request).not.toHaveBeenCalledWith('prompt.receipt', expect.anything())
   expect(page).not.toHaveBeenCalled()
@@ -71,6 +71,15 @@ it("/usage shows main's session totals panel from the owner's session.stats", as
     { text: expect.stringContaining('1') }
   ])
   expect(sys).not.toHaveBeenCalledWith('session totals are not available on the shared gateway yet')
+})
+
+it('/usage shows separate provider accounts even before a session API call', async () => {
+  const lines = ['Account limits — First', 'Week: 25% used', 'Account limits — Second', 'Week: 75% used']
+  const { slash, sys } = harness({ ...STATS, api_calls: 0, account_lines: lines })
+
+  slash('/usage')
+  await vi.waitFor(() => expect(sys).toHaveBeenCalledWith(lines[3]))
+  lines.forEach(line => expect(sys).toHaveBeenCalledWith(line))
 })
 
 it('/usage before any API call says so, as main did', async () => {

@@ -68,8 +68,12 @@ class OpenCodeGoProfile(ProviderProfile):
         from agent.account_usage import AccountUsageSnapshot, AccountUsageWindow
         from hermes_cli.runtime_provider import resolve_runtime_provider
 
-        runtime = resolve_runtime_provider(requested=self.name, explicit_base_url=base_url, explicit_api_key=api_key)
-        token = str(runtime.get("api_key", "") or "").strip()
+        # Per-account /usage already captured the owning profile's credential.
+        # Do not select a pool entry or resolve another account for an explicit key.
+        token = str(api_key or "").strip()
+        if not token:
+            runtime = resolve_runtime_provider(requested=self.name, explicit_base_url=base_url)
+            token = str(runtime.get("api_key", "") or "").strip()
         if not token:
             return None
         with httpx.Client(timeout=10.0) as client:

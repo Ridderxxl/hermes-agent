@@ -248,7 +248,7 @@ it("/usage renders main's session totals from session.stats and /tools lists the
   noteCanonicalCompletion('owner', 'adm-1')
   slash('/usage')
   await flush()
-  expect(request).toHaveBeenCalledWith('session.stats', { session_id: 'owner' })
+  expect(request).toHaveBeenCalledWith('session.stats', { session_id: 'owner', include_accounts: true })
   // Main's one Usage panel with session totals and the context line; no "last turn" panel.
   expect(panel).toHaveBeenCalledTimes(1)
   expect(panel).toHaveBeenCalledWith('Usage', [

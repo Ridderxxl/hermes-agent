@@ -31,6 +31,18 @@ class _UsageProfile(ProviderProfile):
         return self.snapshot
 
 
+def test_fetch_usage_can_report_errors_without_changing_default(monkeypatch):
+    from agent import account_usage
+
+    def fail(base_url, api_key):
+        raise RuntimeError("synthetic failure")
+
+    monkeypatch.setitem(account_usage._READ_ONLY_USAGE_FETCHERS, "synthetic", fail)
+    assert fetch_account_usage("synthetic", read_only=True) is None
+    with pytest.raises(RuntimeError, match="synthetic failure"):
+        fetch_account_usage("synthetic", read_only=True, raise_errors=True)
+
+
 class _Response:
     def __init__(self, payload, status_code=200):
         self._payload = payload

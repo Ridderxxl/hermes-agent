@@ -221,13 +221,15 @@ export function canonicalUsage(ctx: SlashRunCtx) {
   const sid = ctx.sid!
 
   void ctx.gateway.gw
-    .request('session.stats', { session_id: sid })
+    .request('session.stats', { session_id: sid, include_accounts: true })
     .then(raw => {
       if (ctx.stale()) {
         return
       }
 
-      const usage = usageFromTick(asRpcResult<SessionStats>(raw))
+      const stats = asRpcResult<SessionStats & { account_lines?: string[] | null }>(raw)
+      const usage = usageFromTick(stats)
+      stats?.account_lines?.forEach(line => ctx.transcript.sys(line))
 
       if (!usage?.calls) {
         ctx.transcript.sys(t('slashCmd.session.usage.noCalls'))

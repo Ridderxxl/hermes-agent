@@ -4676,6 +4676,7 @@ export interface CanonicalSessionInfo {
 }
 export interface SessionStatsParams {
   session_id: string
+  include_accounts?: boolean
 }
 /** ``gateway/session_usage.py::usage_stats``: session-cumulative counters (the agent's ``session_*``), context / compressor figures, rolling latency and throughput, rate-limit state, live subagents. */
 export interface SessionStats {
@@ -4703,6 +4704,7 @@ export interface SessionStats {
   provider: string
   fallback_model?: string | null
   plan_gauge?: PlanGauge | null
+  account_lines?: string[] | null
 }
 export interface RollbackSessionDiffParams {
   session_id: string
